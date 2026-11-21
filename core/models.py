@@ -6,7 +6,7 @@ class Department(models.Model):
     code = models.CharField(max_length=10, unique=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -21,15 +21,15 @@ class Employee(models.Model):
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
-        related_name='employees'
+        related_name="employees",
     )
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['last_name', 'first_name']
+        ordering = ["last_name", "first_name"]
         indexes = [
-            models.Index(fields=['last_name', 'first_name']),
-            models.Index(fields=['employee_code']),
+            models.Index(fields=["last_name", "first_name"]),
+            models.Index(fields=["employee_code"]),
         ]
 
     def __str__(self):
@@ -43,12 +43,12 @@ class Course(models.Model):
     capacity = models.PositiveIntegerField(default=30)
     attendees = models.ManyToManyField(
         Employee,
-        through='TrainingRecord',
-        related_name='enrolled_courses'
+        through="TrainingRecord",
+        related_name="enrolled_courses",
     )
 
     class Meta:
-        ordering = ['code']
+        ordering = ["code"]
 
     def __str__(self):
         return f"{self.code}: {self.title}"
@@ -56,41 +56,41 @@ class Course(models.Model):
 
 class TrainingRecord(models.Model):
     STATUS_CHOICES = [
-        ('REGISTERED', 'Registered'),
-        ('IN_PROGRESS', 'In Progress'),
-        ('COMPLETED', 'Completed'),
-        ('FAILED', 'Failed'),
+        ("REGISTERED", "Registered"),
+        ("IN_PROGRESS", "In Progress"),
+        ("COMPLETED", "Completed"),
+        ("FAILED", "Failed"),
     ]
 
     employee = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
-        related_name='training_records'
+        related_name="training_records",
     )
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
-        related_name='training_records'
+        related_name="training_records",
     )
     enrollment_date = models.DateField(auto_now_add=True)
     completion_status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='REGISTERED'
+        default="REGISTERED",
     )
     score = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         null=True,
-        blank=True
+        blank=True,
     )
 
     class Meta:
-        ordering = ['-enrollment_date']
+        ordering = ["-enrollment_date"]
         constraints = [
             models.UniqueConstraint(
-                fields=['employee', 'course'],
-                name='unique_employee_course_enrollment'
+                fields=["employee", "course"],
+                name="unique_employee_course_enrollment",
             )
         ]
 
@@ -99,3 +99,31 @@ class TrainingRecord(models.Model):
             f"{self.employee.employee_code} - "
             f"{self.course.code} [{self.completion_status}]"
         )
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=200)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    max_allowed_price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock_quantity = models.IntegerField(default=0)
+    reorder_level = models.IntegerField(default=10)
+    is_promotional = models.BooleanField(default=False)
+    status = models.CharField(max_length=50)
+    warehouse_country = models.CharField(max_length=50)
+    total_sold = models.IntegerField(default=0)
+    total_revenue = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+    )
+
+    def __str__(self):
+        return self.name
